@@ -1,0 +1,52 @@
+# Git
+.git
+.gitignore
+.github
+
+# Build artifacts
+build/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+*.cmake
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Data and logs
+data/
+logs/
+*.log
+
+# Models (large files - mount separately)
+models/*.trt
+models/*.onnx
+models/*.pt
+models/*.pth
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+env/
+venv/
+.env
+
+# Documentation
+docs/
+*.md
+!README.md
+
+# Testing
+tests/
+*.test
+
+# Temporary files
+*.tmp
+*.temp
+.cache/

@@ -1,0 +1,79 @@
+version: '3.8'
+
+services:
+  blackjack-ai:
+    image: blackjack-ai-vision:2.5
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: blackjack_ai_vision
+
+    # NVIDIA GPU support
+    runtime: nvidia
+
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=0
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility,graphics
+      - CUDA_VISIBLE_DEVICES=0
+      - DISPLAY=${DISPLAY}
+      - QT_X11_NO_MITSHM=1
+
+    # GPU resource limits
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+    # Volumes for persistent data
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./config.json:/app/config.json:ro
+      - ./models:/app/models:ro
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw  # X11 for display
+
+    # Network mode for display
+    network_mode: host
+
+    # Restart policy
+    restart: unless-stopped
+
+    # Security options
+    security_opt:
+      - seccomp:unconfined
+
+    # IPC mode for shared memory
+    ipc: host
+
+    # Privileged mode for GPU access (if needed)
+    # privileged: true
+
+    # Command override (optional)
+    # command: ["/app/blackjack_ai_vision", "--config", "/app/config.json", "--verbose"]
+
+  # Optional: Web dashboard service
+  # dashboard:
+  #   image: blackjack-ai-dashboard:1.0
+  #   container_name: blackjack_dashboard
+  #   ports:
+  #     - "8080:8080"
+  #   volumes:
+  #     - ./data:/app/data:ro
+  #   depends_on:
+  #     - blackjack-ai
+  #   restart: unless-stopped
+
+# Networks (if needed)
+networks:
+  default:
+    driver: bridge
+
+# Volumes for persistent storage
+volumes:
+  data:
+    driver: local
+  logs:
+    driver: local
