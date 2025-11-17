@@ -2,6 +2,7 @@
 
 #include "game_state_tracker.hpp"
 #include "../intelligence/counting/card_counter.hpp"
+#include "../intelligence/counting/shuffle_detector.hpp"
 #include "../intelligence/strategy/basic_strategy.hpp"
 #include "../intelligence/strategy/betting_strategy.hpp"
 #include "../ui/alerts/audio_alert_manager.hpp"
@@ -35,15 +36,18 @@ public:
     int32_t getRunningCount() const;
     float getTrueCount() const;
     double getRecommendedBet() const;
+    float getCurrentPenetration() const;
 
 private:
     void makeDecision();
     void updateCardCount(const std::vector<Detection>& detections);
+    void checkAndHandleShuffleDetection();
     ui::AlertType actionToAlertType(intelligence::Action action);
 
     // Subsystems
     std::unique_ptr<vision::TensorRTEngine> m_visionEngine;
     std::unique_ptr<intelligence::CardCounter> m_cardCounter;
+    std::unique_ptr<intelligence::ShuffleDetector> m_shuffleDetector;
     std::unique_ptr<intelligence::BasicStrategy> m_basicStrategy;
     std::unique_ptr<intelligence::BettingStrategy> m_bettingStrategy;
     std::unique_ptr<GameStateTracker> m_gameState;

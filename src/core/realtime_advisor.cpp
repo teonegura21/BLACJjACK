@@ -38,6 +38,11 @@ bool RealtimeAdvisor::initialize() {
     m_cardCounter->initialize(m_countingConfig.deck_count);
     logger.info("Card counter initialized ({} decks)", m_countingConfig.deck_count);
 
+    // Initialize shuffle detector
+    m_shuffleDetector = std::make_unique<intelligence::ShuffleDetector>();
+    m_shuffleDetector->initialize(m_countingConfig.deck_count, m_countingConfig.penetration);
+    logger.info("Shuffle detector initialized (auto-reset enabled)");
+
     // Initialize strategy engine
     m_basicStrategy = std::make_unique<intelligence::BasicStrategy>();
     m_basicStrategy->initialize(m_strategyConfig.basic_strategy_rules);
@@ -75,6 +80,9 @@ bool RealtimeAdvisor::initialize() {
     logger.info("    2 beeps = Double");
     logger.info("    3 beeps = Split");
     logger.info("    4 beeps = Surrender");
+    logger.info("");
+    logger.info("  Auto-Reset: ENABLED");
+    logger.info("    Triggers: Penetration, Inactivity, Card Depletion");
     logger.info("========================================");
 
     return true;
@@ -106,6 +114,12 @@ void RealtimeAdvisor::processFrame(const float* inputTensor) {
     }
 
     logger.debug("Detected {} cards", detections.size());
+
+    // Update shuffle detector
+    m_shuffleDetector->update(detections);
+
+    // Check for automatic shuffle detection
+    checkAndHandleShuffleDetection();
 
     // Update game state with detections
     m_gameState->updateDetectedCards(detections);
@@ -255,11 +269,56 @@ ui::AlertType RealtimeAdvisor::actionToAlertType(intelligence::Action action) {
     }
 }
 
+void RealtimeAdvisor::checkAndHandleShuffleDetection() {
+    if (!m_shuffleDetector->isShuffleDetected()) {
+        return; // No shuffle detected
+    }
+
+    auto& logger = utils::Logger::getInstance();
+
+    // Get reason for detection
+    auto indicator = m_shuffleDetector->getLastIndicator();
+    std::string reason;
+
+    switch (indicator) {
+        case intelligence::ShuffleIndicator::CardDepletion:
+            reason = "Card Depletion (impossible count)";
+            break;
+        case intelligence::ShuffleIndicator::PenetrationReached:
+            reason = "Penetration Limit Reached";
+            break;
+        case intelligence::ShuffleIndicator::LongPause:
+            reason = "Long Pause (30+ seconds)";
+            break;
+        case intelligence::ShuffleIndicator::AllCardsGone:
+            reason = "All Cards Disappeared";
+            break;
+        default:
+            reason = "Unknown";
+    }
+
+    logger.info("========================================");
+    logger.info("AUTO-RESET TRIGGERED: {}", reason);
+    logger.info("Penetration: {:.1f}%", m_shuffleDetector->getCurrentPenetration() * 100);
+    logger.info("========================================");
+
+    // Reset everything
+    m_cardCounter->reset();
+    m_shuffleDetector->reset();
+    m_gameState->resetForNewShoe();
+
+    // Play alert
+    m_audioAlerts->playAlert(ui::AlertType::NewShoe);
+
+    logger.info("Count automatically reset to 0");
+}
+
 void RealtimeAdvisor::resetCount() {
     auto& logger = utils::Logger::getInstance();
-    logger.info("RESETTING COUNT (New Shoe)");
+    logger.info("MANUAL RESET (New Shoe)");
 
     m_cardCounter->reset();
+    m_shuffleDetector->forceReset();
     m_gameState->resetForNewShoe();
     m_audioAlerts->playAlert(ui::AlertType::CountReset);
 
@@ -296,6 +355,10 @@ double RealtimeAdvisor::getRecommendedBet() const {
     return m_bettingStrategy->calculateBet(
         m_cardCounter->getTrueCount(),
         m_bettingStrategy->getBankroll());
+}
+
+float RealtimeAdvisor::getCurrentPenetration() const {
+    return m_shuffleDetector->getCurrentPenetration();
 }
 
 } // namespace core

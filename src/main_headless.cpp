@@ -65,10 +65,10 @@ void printHelp() {
     std::cout << "  5 fast beeps = INSURANCE\n";
     std::cout << "\n";
     std::cout << "Keyboard Controls:\n";
-    std::cout << "  R = Reset count (new shoe)\n";
+    std::cout << "  R = Reset count (manual override)\n";
     std::cout << "  N = Next hand\n";
     std::cout << "  D = Force decision\n";
-    std::cout << "  S = Show status\n";
+    std::cout << "  S = Show status (RC, TC, penetration, bet)\n";
     std::cout << "  H = Show help\n";
     std::cout << "  Q = Quit\n";
     std::cout << "\n";
@@ -77,6 +77,13 @@ void printHelp() {
     std::cout << "  - Count cards using Hi-Lo\n";
     std::cout << "  - Apply Illustrious 18 deviations\n";
     std::cout << "  - Give you audio signals for actions\n";
+    std::cout << "  - AUTO-RESET count when shuffle detected!\n";
+    std::cout << "\n";
+    std::cout << "Auto-Reset Triggers:\n";
+    std::cout << "  - Penetration: 75%+ of shoe dealt\n";
+    std::cout << "  - Inactivity: 30+ seconds no cards\n";
+    std::cout << "  - Card depletion: Impossible card count\n";
+    std::cout << "  - All cards gone: Shuffle in progress\n";
     std::cout << "\n";
     std::cout << "========================================\n";
     std::cout << "\n";
@@ -88,6 +95,8 @@ void showStatus(const core::RealtimeAdvisor& advisor) {
     std::cout << "Running Count: " << advisor.getRunningCount() << "\n";
     std::cout << "True Count: " << std::fixed << std::setprecision(1)
               << advisor.getTrueCount() << "\n";
+    std::cout << "Penetration: " << std::fixed << std::setprecision(1)
+              << advisor.getCurrentPenetration() * 100 << "%\n";
     std::cout << "Recommended Bet: $" << std::fixed << std::setprecision(2)
               << advisor.getRecommendedBet() << "\n";
     std::cout << "--------------\n";
