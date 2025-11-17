@@ -1,0 +1,63 @@
+{
+  "system": {
+    "latency_target_ms": 8,
+    "gpu_device_id": 0,
+    "thread_affinity_enabled": true,
+    "real_time_priority": true,
+    "cuda_stream_priority": "high",
+    "cpu_core_affinity": [0, 1, 2, 3],
+    "memory_pool_size_mb": 2048,
+    "enable_nvtx_markers": true,
+    "gpu_clock_lock_mhz": 2400
+  },
+  "capture": {
+    "method": "dxgi",
+    "frame_rate": 120,
+    "buffer_count": 16,
+    "motion_detection_threshold": 0.015,
+    "use_hardware_encoding": true,
+    "color_space": "bt709",
+    "hdr_enabled": false,
+    "async_copy": true
+  },
+  "vision": {
+    "model_path": "./models/yolov11x_card_detector.trt",
+    "model_type": "yolov11x",
+    "input_resolution": [1280, 1280],
+    "confidence_threshold": 0.65,
+    "nms_threshold": 0.45,
+    "batch_size": 1,
+    "use_fp16": true,
+    "use_int8": false,
+    "dla_core": -1,
+    "max_workspace_size_mb": 4096,
+    "enable_cuda_graphs": true,
+    "enable_tactic_sources": true,
+    "profiling_verbosity": "detailed"
+  },
+  "counting": {
+    "system": "hi-lo",
+    "deck_count": 6,
+    "penetration": 0.75,
+    "history_size": 512
+  },
+  "strategy": {
+    "basic_strategy_rules": "s17_das",
+    "deviations_enabled": true,
+    "illustrious_18": true,
+    "fab_4": true
+  },
+  "betting": {
+    "kelly_fraction": 0.25,
+    "min_bet": 10,
+    "max_bet": 500,
+    "spread": [1, 2, 4, 8, 12]
+  },
+  "ui": {
+    "overlay_enabled": true,
+    "transparency": 0.7,
+    "color_scheme": "dark",
+    "show_performance_metrics": true,
+    "audio_alerts": true
+  }
+}

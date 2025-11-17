@@ -1,0 +1,35 @@
+# Build directories
+build/
+cmake-build-*/
+*.o
+*.a
+*.so
+*.dll
+*.exe
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Models and weights
+models/*.trt
+models/*.onnx
+models/*.engine
+
+# Data and logs
+logs/
+data/sessions/
+*.log
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+compile_commands.json
+
+# System files
+.DS_Store
+Thumbs.db
