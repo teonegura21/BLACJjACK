@@ -81,6 +81,7 @@ void printHelp() {
     std::cout << "\n";
     std::cout << "Auto-Reset Triggers:\n";
     std::cout << "  - Penetration: 75%+ of shoe dealt\n";
+    std::cout << "  - Duplicate card: Same card appears twice!\n";
     std::cout << "  - Inactivity: 30+ seconds no cards\n";
     std::cout << "  - Card depletion: Impossible card count\n";
     std::cout << "  - All cards gone: Shuffle in progress\n";

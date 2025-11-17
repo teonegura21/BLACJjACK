@@ -79,6 +79,7 @@ void ShuffleDetector::reset() {
     m_lastIndicator = ShuffleIndicator::None;
     m_previousFrameCardCount = 0;
     m_previousFrameCards.clear();
+    m_recentCards.clear();
     m_consecutiveEmptyFrames = 0;
     m_lastResetTime = std::chrono::steady_clock::now();
 }
@@ -97,11 +98,22 @@ void ShuffleDetector::update(const std::vector<core::Detection>& detections) {
     for (const auto& det : detections) {
         currentFrameCards.push_back(det.card_id);
 
+        // Check for duplicate card (same card appearing twice)
+        checkDuplicateCard(det.card_id);
+
         // Add to inventory (only count unique cards once per session)
         static std::set<uint8_t> session_cards;
         if (session_cards.find(det.card_id) == session_cards.end()) {
             m_inventory.addCard(det.card_id);
             session_cards.insert(det.card_id);
+        }
+
+        // Add to recent cards list
+        m_recentCards.push_back(det.card_id);
+
+        // Keep only last MAX_RECENT_CARDS
+        if (m_recentCards.size() > MAX_RECENT_CARDS) {
+            m_recentCards.erase(m_recentCards.begin());
         }
     }
 
@@ -174,13 +186,30 @@ void ShuffleDetector::checkCardDisappearance() {
     }
 }
 
-void ShuffleDetector::checkImpossibleSequence() {
-    // Check for impossible card sequences
-    // Example: If we see the same specific card (e.g., 7♥) appear twice
-    // in quick succession without enough time for it to be re-dealt
+void ShuffleDetector::checkDuplicateCard(uint8_t card_id) {
+    // Check if this exact card has been seen in recent history
+    // If the same card appears twice, it's impossible without a shuffle
 
-    // This is more advanced and would require tracking specific card instances
-    // For now, rely on card depletion tracking which catches this
+    // Only check if we've seen enough cards (avoid false positives at start)
+    if (m_recentCards.size() < 10) {
+        return;
+    }
+
+    // Search for this card_id in recent history
+    for (size_t i = 0; i < m_recentCards.size() - 1; i++) {  // -1 to exclude the one we just added
+        if (m_recentCards[i] == card_id) {
+            auto& logger = utils::Logger::getInstance();
+            logger.warn("Duplicate card detected: Card ID {} appeared twice (impossible!)", card_id);
+            logger.info("This means shuffle occurred but wasn't shown on camera");
+            triggerShuffleDetection(ShuffleIndicator::DuplicateCard);
+            return;
+        }
+    }
+}
+
+void ShuffleDetector::checkImpossibleSequence() {
+    // This is now handled by checkDuplicateCard()
+    // Called for each detected card in update()
 }
 
 void ShuffleDetector::triggerShuffleDetection(ShuffleIndicator indicator) {
@@ -203,6 +232,9 @@ void ShuffleDetector::triggerShuffleDetection(ShuffleIndicator indicator) {
             break;
         case ShuffleIndicator::AllCardsGone:
             indicatorStr = "All Cards Disappeared";
+            break;
+        case ShuffleIndicator::DuplicateCard:
+            indicatorStr = "Duplicate Card (same card appeared twice!)";
             break;
         case ShuffleIndicator::ImpossibleSequence:
             indicatorStr = "Impossible Card Sequence";

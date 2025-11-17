@@ -14,6 +14,7 @@ enum class ShuffleIndicator {
     PenetrationReached, // 75%+ of shoe dealt
     LongPause,          // 30+ seconds no cards detected
     AllCardsGone,       // All cards disappeared from screen
+    DuplicateCard,      // Same exact card appeared twice (impossible!)
     ImpossibleSequence, // Card sequence that shouldn't happen
     VisualCue          // Detected "shuffle" text or cut card
 };
@@ -64,6 +65,7 @@ private:
     void checkPenetration();
     void checkInactivity();
     void checkCardDisappearance();
+    void checkDuplicateCard(uint8_t card_id);
     void checkImpossibleSequence();
 
     void triggerShuffleDetection(ShuffleIndicator indicator);
@@ -82,6 +84,10 @@ private:
     // Previous frame state
     uint32_t m_previousFrameCardCount{0};
     std::vector<uint8_t> m_previousFrameCards;
+
+    // Recent card tracking for duplicate detection
+    std::vector<uint8_t> m_recentCards;
+    static constexpr size_t MAX_RECENT_CARDS = 100; // Track last 100 cards
 
     // Configuration
     uint32_t m_deckCount{6};

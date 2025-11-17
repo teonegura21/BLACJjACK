@@ -49,7 +49,39 @@ Count reset to 0
 
 ---
 
-### 2. **Card Depletion** (Impossible Count Detection)
+### 2. **Duplicate Card** (Hidden Shuffle Detection) 🔥 NEW!
+
+**Trigger**: Same exact card appears twice
+
+```
+Example: 7♥ detected, then 20 cards later, 7♥ appears again
+This is IMPOSSIBLE - must be a shuffle!
+```
+
+**Why**: The most powerful detection method! If the exact same card (e.g., 7 of Hearts) appears twice in the recent card history, it's physically impossible without a shuffle. This catches:
+- **Hidden shuffles** - Dealer shuffles off-camera
+- **Quick shuffles** - Shuffle happens but camera doesn't show it
+- **Continuous shuffling machines** - Automatic shufflers
+
+**How It Works**:
+- Tracks last 100 cards seen
+- Each card has unique ID (0-51 for 52 cards)
+- When new card detected, checks if it already exists in recent history
+- If found → IMPOSSIBLE → Auto-reset
+
+**Example**:
+```
+Recent cards: [..., 7♥, 10♣, 2♦, K♠, ...]
+New card detected: 7♥ (DUPLICATE!)
+AUTO-RESET TRIGGERED: Duplicate Card (same card twice - hidden shuffle!)
+Count reset to 0
+```
+
+**This is critical** because many dealers don't show the shuffle on camera, or the shuffle happens quickly between hands. The system will catch it automatically!
+
+---
+
+### 3. **Card Depletion** (Impossible Count Detection)
 
 **Trigger**: More cards seen than physically possible
 
@@ -74,7 +106,7 @@ Count reset to 0
 
 ---
 
-### 3. **Long Pause** (Inactivity Detection)
+### 4. **Long Pause** (Inactivity Detection)
 
 **Trigger**: No cards detected for 30+ seconds
 
@@ -102,7 +134,7 @@ Count reset to 0
 
 ---
 
-### 4. **All Cards Disappeared**
+### 5. **All Cards Disappeared**
 
 **Trigger**: All visible cards vanish for 2+ seconds (60+ consecutive empty frames)
 
@@ -135,6 +167,7 @@ Every Frame:
             ▼
 ┌─────────────────────────────────┐
 │ 2. Update shuffle detector      │
+│    - Check for duplicate cards  │
 │    - Track card inventory       │
 │    - Monitor penetration        │
 │    - Check for inactivity       │

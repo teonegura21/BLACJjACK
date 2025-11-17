@@ -82,7 +82,7 @@ bool RealtimeAdvisor::initialize() {
     logger.info("    4 beeps = Surrender");
     logger.info("");
     logger.info("  Auto-Reset: ENABLED");
-    logger.info("    Triggers: Penetration, Inactivity, Card Depletion");
+    logger.info("    Triggers: Penetration, Duplicate Card, Inactivity, Card Depletion");
     logger.info("========================================");
 
     return true;
@@ -292,6 +292,9 @@ void RealtimeAdvisor::checkAndHandleShuffleDetection() {
             break;
         case intelligence::ShuffleIndicator::AllCardsGone:
             reason = "All Cards Disappeared";
+            break;
+        case intelligence::ShuffleIndicator::DuplicateCard:
+            reason = "Duplicate Card (same card twice - hidden shuffle!)";
             break;
         default:
             reason = "Unknown";
